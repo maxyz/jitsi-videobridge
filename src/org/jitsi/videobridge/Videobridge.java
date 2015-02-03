@@ -898,13 +898,7 @@ public class Videobridge
                                         != null)
 
                             {
-                                loggingService.logEvent(
-                                        EventFactory.channelCreated(
-                                                channel.getID(),
-                                                content.getName(),
-                                                conference.getID(),
-                                                endpoint == null ? "" : endpoint,
-                                                lastN == null ? -1 : lastN));
+                                loggingService.channelCreated(channel);
                             }
 
                         }

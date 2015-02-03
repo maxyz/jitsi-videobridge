@@ -327,13 +327,7 @@ public class IceUdpTransportManager
                 = conference.getVideobridge().getLoggingService();
         if (loggingService != null)
         {
-            loggingService.logEvent(
-                EventFactory.transportCreated(
-                    hashCode(),
-                    conference.getID(),
-                    numComponents,
-                    iceAgent.getLocalUfrag(),
-                    isControlling));
+            loggingService.transportCreated(this);
         }
     }
 
@@ -426,11 +420,7 @@ public class IceUdpTransportManager
                 = conference.getVideobridge().getLoggingService();
         if (loggingService != null)
         {
-            loggingService.logEvent(
-                EventFactory.transportChannelAdded(
-                    hashCode(),
-                    conference.getID(),
-                    channel.getID()));
+            loggingService.transportChannelAdded(channel);
         }
 
         return true;
@@ -714,12 +704,7 @@ public class IceUdpTransportManager
                 = conference.getVideobridge().getLoggingService();
             if (loggingService != null)
             {
-                loggingService.logEvent(
-                    EventFactory.transportChannelRemoved(
-                        hashCode(),
-                        conference.getID(),
-                        channel.getID())
-                );
+                loggingService.transportChannelRemoved(channel);
             }
 
             channel.transportClosed();
@@ -748,7 +733,7 @@ public class IceUdpTransportManager
     {
         NetworkAddressManagerService nams
                 = ServiceUtils.getService(
-                getBundleContext(), NetworkAddressManagerService.class);
+            getBundleContext(), NetworkAddressManagerService.class);
         Agent iceAgent = nams.createIceAgent();
 
         //add videobridge specific harvesters such as a mapping and an Amazon
@@ -1154,6 +1139,52 @@ public class IceUdpTransportManager
         candidateID.append(Long.toHexString(candidate.hashCode()));
 
         return candidateID.toString();
+    }
+
+    /**
+     * Gets the <tt>Conference</tt> object that this <tt>TransportManager</tt>
+     * is associated with.
+     */
+    public Conference getConference()
+    {
+        return conference;
+    }
+
+    /**
+     * Gets the number of {@link org.ice4j.ice.Component}-s to create in
+     * {@link #iceStream}.
+     */
+    public int getNumComponents()
+    {
+        return numComponents;
+    }
+
+    /**
+     * Gets the <tt>Agent</tt> which implements the ICE protocol and which is
+     * used by this instance to implement the Jingle ICE-UDP transport.
+     */
+    public Agent getAgent()
+    {
+        return iceAgent;
+    }
+
+    /**
+     * Gets the <tt>IceMediaStream</tt> of {@link #iceAgent} associated with the
+     * <tt>Channel</tt> of this instance.
+     */
+    public IceMediaStream getIceStream()
+    {
+        return iceStream;
+    }
+
+    /**
+     * Returns a boolean value determining whether this
+     * <tt>IceUdpTransportManager</tt> will serve as the the controlling or
+     * the controlled ICE agent.
+     */
+    public boolean isControlling()
+    {
+        return isControlling;
     }
 
     /**
@@ -1592,12 +1623,7 @@ public class IceUdpTransportManager
                     = conference.getVideobridge().getLoggingService();
             if (loggingService != null)
             {
-                loggingService.logEvent(
-                    EventFactory.transportStateChanged(
-                            hashCode(),
-                            conference.getID(),
-                            (oldState == null ? "null" : oldState.toString()),
-                            (newState == null ? "null" : newState.toString())));
+                loggingService.transportStateChanged(this, oldState, newState);
             }
         }
         catch (Throwable t)
@@ -1760,20 +1786,7 @@ public class IceUdpTransportManager
                 = conference.getVideobridge().getLoggingService();
         if (loggingService != null)
         {
-            StringBuilder s = new StringBuilder();
-            for (Component component : iceStream.getComponents())
-            {
-                CandidatePair pair = component.getSelectedPair();
-                s.append(pair.getLocalCandidate().getTransportAddress())
-                    .append(" -> ")
-                    .append(pair.getRemoteCandidate().getTransportAddress())
-                    .append("; ");
-            }
-            loggingService.logEvent(
-                EventFactory.transportConnected(
-                    hashCode(),
-                    conference.getID(),
-                    s.toString()));
+            loggingService.transportConnected(this);
         }
         for (Channel channel : getChannels())
         {

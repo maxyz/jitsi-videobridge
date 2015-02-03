@@ -331,10 +331,7 @@ public abstract class Channel
         LoggingService loggingService
                 = conference.getVideobridge().getLoggingService();
         if (loggingService != null)
-            loggingService.logEvent(
-                    EventFactory.channelExpired(id,
-                                                content.getName(),
-                                                conference.getID()));
+            loggingService.channelExpired(this);
         try
         {
             content.expireChannel(this);
@@ -529,7 +526,7 @@ public abstract class Channel
      * @return the <tt>TransportManager</tt> which represents the Jingle
      * transport of this <tt>Channel</tt>
      */
-    protected TransportManager getTransportManager()
+    public TransportManager getTransportManager()
         throws IOException
     {
         return transportManager;

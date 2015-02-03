@@ -167,8 +167,7 @@ public class Content
 
         if (loggingService != null)
         {
-            loggingService.logEvent(
-                    EventFactory.contentCreated(name, conference.getID()));
+            loggingService.contentCreated(this);
         }
 
         touch();
@@ -370,8 +369,7 @@ public class Content
         LoggingService loggingService
                 = conference.getVideobridge().getLoggingService();
         if (loggingService != null)
-            loggingService.logEvent(
-                    EventFactory.contentExpired(name, conference.getID()));
+            loggingService.contentExpired(this);
         try
         {
             conference.expireContent(this);

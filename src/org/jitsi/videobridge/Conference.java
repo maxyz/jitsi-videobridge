@@ -203,7 +203,7 @@ public class Conference
 
         LoggingService loggingService = videobridge.getLoggingService();
         if (loggingService != null)
-            loggingService.logEvent(EventFactory.conferenceCreated(id, focus));
+            loggingService.conferenceCreated(this);
     }
 
     /**
@@ -561,7 +561,7 @@ public class Conference
 
         LoggingService loggingService = videobridge.getLoggingService();
         if (loggingService != null)
-            loggingService.logEvent(EventFactory.conferenceExpired(id));
+            loggingService.conferenceExpired(this);
 
         setRecording(false);
         if (recorderEventHandler != null)
@@ -791,8 +791,7 @@ public class Conference
 
                 LoggingService loggingService = videobridge.getLoggingService();
                 if (loggingService != null)
-                    loggingService.logEvent(
-                            EventFactory.endpointCreated(getID(), id));
+                    loggingService.endpointCreated(endpoint);
             }
         }
 
@@ -1637,11 +1636,7 @@ public class Conference
                             = getVideobridge().getLoggingService();
                     if (loggingService != null)
                     {
-                        loggingService.logEvent(
-                            EventFactory.endpointDisplayNameChanged(
-                                getID(),
-                                id,
-                                newDisplayName));
+                        loggingService.endpointDisplayNameChanged(endpoint);
                     }
                 }
             }

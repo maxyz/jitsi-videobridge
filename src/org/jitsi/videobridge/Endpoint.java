@@ -329,6 +329,18 @@ public class Endpoint
     }
 
     /**
+     * Gets the <tt>Conference</tt> to which this <tt>Endpoint</tt> belongs to.
+     *
+     * @return the <tt>Conference</tt> to which this <tt>Endpoint</tt> belongs
+     * to.
+     */
+    public Conference getConference()
+    {
+        WeakReference<Conference> wr = weakConference;
+        return wr == null ? null : wr.get();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -369,7 +381,7 @@ public class Endpoint
                 String newSelectedEndpointID
                     = (String) jsonObject.get("selectedEndpoint");
 
-                Conference conference = weakConference.get();
+                Conference conference = getConference();
 
                 Endpoint newSelectedEndpoint;
                 if (!StringUtils.isNullOrEmpty(newSelectedEndpointID)
@@ -429,7 +441,7 @@ public class Endpoint
                 String newPinnedEndpointID
                     = (String) jsonObject.get("pinnedEndpoint");
 
-                Conference conference = weakConference.get();
+                Conference conference = getConference();
 
                 Endpoint newPinnedEndpoint;
                 if (!StringUtils.isNullOrEmpty(newPinnedEndpointID)
