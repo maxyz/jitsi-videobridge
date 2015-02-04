@@ -6,6 +6,12 @@ import org.jitsi.videobridge.*;
 /**
  * Allows logging of {@link org.jitsi.videobridge.log.Event}s.
  *
+ * FIXME(gp) A more long-term solution should be loggers (influx-db, newrelic,
+ * etc) to listen for events and react appropriately. Because it would be
+ * inconvinient for the observer to observe newly created channels, we could
+ * have an <tt>EventManager</tt> that would route events to interested
+ * observers. Something like PubSub but for internal usage.
+ *
  * @author Boris Grozev
  * @author George Politis
  */
@@ -125,4 +131,13 @@ public interface LoggingService
      *
      */
     void channelExpired(Channel channel);
+
+    /**
+     * Notifies the <tt>LoggingService</tt> that a COLIBRI channel has started
+     * streaming.
+     *
+     * @param rtpChannel The expired COLIBRI channel.
+     *
+     */
+    void channelStartedStreaming(RtpChannel rtpChannel);
 }

@@ -402,14 +402,6 @@ public abstract class Channel
                             + videobridge.getConferenceCount() + ", channels "
                             + videobridge.getChannelCount() + ".");
             }
-
-            MetricService metricService = videobridge.getMetricService();
-            if (metricService != null)
-            {
-                metricService
-                        .publishNumericMetric(MetricService.METRIC_CHANNELS,
-                                              videobridge.getChannelCount());
-            }
         }
     }
 

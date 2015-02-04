@@ -247,17 +247,6 @@ public class Videobridge
                         + getChannelCount() + ".");
         }
 
-        MetricService metricService = getMetricService();
-        if (metricService != null)
-        {
-            metricService
-                .publishNumericMetric(MetricService.METRIC_CONFERENCES,
-                                      getConferenceCount());
-            metricService
-                .startMeasuredTransaction(MetricService.METRIC_CONFERENCELENGTH,
-                                      conference.getID());
-        }
-
         return conference;
     }
 

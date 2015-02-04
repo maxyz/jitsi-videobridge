@@ -72,9 +72,6 @@ public class OSGi
                 "org/jitsi/videobridge/log/LoggingBundleActivator"
             },
             {
-                "org/jitsi/videobridge/metrics/MetricServiceActivator"
-            },
-            {
                 "org/jitsi/videobridge/VideobridgeBundleActivator"
             },
             {

@@ -614,18 +614,6 @@ public class Conference
                             + videobridge.getConferenceCount() + ", channels "
                             + videobridge.getChannelCount() + ".");
             }
-
-            MetricService metricService = videobridge.getMetricService();
-            if (metricService != null)
-            {
-                metricService
-                    .publishNumericMetric(MetricService.METRIC_CONFERENCES,
-                                          videobridge.getConferenceCount());
-                metricService
-                    .endMeasuredTransaction(
-                            MetricService.METRIC_CONFERENCELENGTH,
-                            this.getID());
-            }
         }
     }
 

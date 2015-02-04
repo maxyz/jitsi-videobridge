@@ -7,8 +7,12 @@
 package org.jitsi.videobridge.metrics;
 
 import java.util.*;
+
+import org.ice4j.ice.*;
 import org.jitsi.service.configuration.*;
 import org.jitsi.util.*;
+import org.jitsi.videobridge.*;
+import org.jitsi.videobridge.log.*;
 
 /**
  * A generic service interface to push metrics to cloud based collector servers.
@@ -31,6 +35,7 @@ import org.jitsi.util.*;
  * @author zbettenbuk
  */
 public class MetricService
+    implements LoggingService
 {
 
     private static final Logger logger = Logger.getLogger(MetricService.class);
@@ -40,6 +45,13 @@ public class MetricService
     public static final String METRIC_CHANNELS = "Channels";
     public static final String METRIC_CONFERENCELENGTH = "Conference length";
     public static final String METRIC_CHANNELSTART_POSTFIX = " start";
+
+    /**
+     * The name of the property which specifies whether metrics logging is
+     * enabled.
+     */
+    public static final String ENABLED_PNAME
+        = "org.jitsi.videobridge.metrics.METRICS_ENABLED";
 
     public MetricService(ConfigurationService config)
     {
@@ -78,7 +90,7 @@ public class MetricService
      * @param metricName Name of the metric
      * @param metricValue Value of the metric
      */
-    public void publishNumericMetric(String metricName, int metricValue)
+    private void publishNumericMetric(String metricName, int metricValue)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -107,7 +119,7 @@ public class MetricService
      * @param metricName Name of the metric
      * @param metricValue Value of the metric
      */
-    public void publishStringMetric(String metricName, String metricValue)
+    private void publishStringMetric(String metricName, String metricValue)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -135,7 +147,7 @@ public class MetricService
      *
      * @param metricName Name of the metric
      */
-    public void publishIncrementalMetric(String metricName)
+    private void publishIncrementalMetric(String metricName)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -166,7 +178,7 @@ public class MetricService
      * @param metricName Name of the metric
      * @param increment Value to increase the metric with
      */
-    public void publishIncrementalMetric(String metricName, int increment)
+    private void publishIncrementalMetric(String metricName, int increment)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -194,7 +206,7 @@ public class MetricService
      * @param transactionType Type of the transaction (e.g. create conference)
      * @param transactionId Unique id of the transaction (e.g. conference ID)
      */
-    public void startMeasuredTransaction(String transactionType,
+    private void startMeasuredTransaction(String transactionType,
                                          String transactionId)
     {
         for (MetricServicePublisher publisher : this.publishers)
@@ -224,7 +236,7 @@ public class MetricService
      * @param transactionType Type of the transaction (e.g. create conference)
      * @param transactionId Unique id of the transaction (e.g. conference ID)
      */
-    public void endMeasuredTransaction(String transactionType,
+    private void endMeasuredTransaction(String transactionType,
                                        String transactionId)
     {
         for (MetricServicePublisher publisher : this.publishers)
@@ -247,4 +259,244 @@ public class MetricService
         }
     }
 
+    @Override
+    public void logEvent(Event event)
+    {
+        // Ignore.
+    }
+
+    @Override
+    public void conferenceCreated(Conference conference)
+    {
+        int sz;
+        try
+        {
+            sz = getConferenceCount(conference);
+        }
+        catch (Exception e)
+        {
+            logger.debug("Could not log conference expired event because " +
+                "the conference is null.");
+            return;
+        }
+
+        publishNumericMetric(MetricService.METRIC_CONFERENCES, sz);
+
+        startMeasuredTransaction(MetricService.METRIC_CONFERENCELENGTH,
+            conference.getID());
+    }
+
+    int getConferenceCount(Conference conference)
+    {
+        if (conference == null)
+        {
+            throw new IllegalArgumentException("conference");
+        }
+
+        Videobridge videobridge = conference.getVideobridge();
+        if (videobridge == null)
+        {
+            throw new NullPointerException("videobridge");
+        }
+
+        // XXX(gp) This method is called after the conference expired field has
+        // been set to true but *before* the conference has been removed from
+        // the conference list of the videobridge object.
+        //
+        // In the following loop we accurately calculate the active conference
+        // count by checking whether or not the conference expired flag has been
+        // set.
+
+        int sz = 0;
+
+        Conference[] conferences = videobridge.getConferences();
+        if (conferences != null && conferences.length != 0)
+        {
+            for (Conference c : conferences)
+            {
+                if (c != null && !c.isExpired())
+                {
+                    sz++;
+                }
+            }
+        }
+
+        return sz;
+    }
+
+    @Override
+    public void conferenceExpired(Conference conference)
+    {
+        int sz;
+        try
+        {
+            sz =getConferenceCount(conference);
+        }
+        catch (Exception e)
+        {
+            logger.debug("Could not log conference expired event because " +
+                "the conference is null.");
+            return;
+        }
+
+        publishNumericMetric(MetricService.METRIC_CONFERENCES, sz);
+
+        endMeasuredTransaction(
+                MetricService.METRIC_CONFERENCELENGTH,
+                conference.getID());
+    }
+
+    @Override
+    public void endpointCreated(Endpoint endpoint)
+    {
+
+    }
+
+    @Override
+    public void endpointDisplayNameChanged(Endpoint endpoint)
+    {
+
+    }
+
+    @Override
+    public void contentCreated(Content content)
+    {
+
+    }
+
+    @Override
+    public void contentExpired(Content content)
+    {
+
+    }
+
+    @Override
+    public void transportChannelAdded(Channel channel)
+    {
+
+    }
+
+    @Override
+    public void transportChannelRemoved(Channel channel)
+    {
+
+    }
+
+    @Override
+    public void transportStateChanged(IceUdpTransportManager iceUdpTransportManager, IceProcessingState oldState, IceProcessingState newState)
+    {
+
+    }
+
+    @Override
+    public void transportCreated(IceUdpTransportManager iceUdpTransportManager)
+    {
+
+    }
+
+    @Override
+    public void transportConnected(IceUdpTransportManager iceUdpTransportManager)
+    {
+
+    }
+
+    @Override
+    public void channelCreated(RtpChannel channel)
+    {
+        int channelCount = getChannelCount(channel);
+        publishNumericMetric(MetricService.METRIC_CHANNELS, channelCount);
+    }
+
+    @Override
+    public void channelExpired(Channel channel)
+    {
+        int channelCount = getChannelCount(channel);
+        publishNumericMetric(MetricService.METRIC_CHANNELS, channelCount);
+    }
+
+    private int getChannelCount(Channel channel)
+    {
+        int channelCount = 0;
+        if (channel == null)
+        {
+            logger.debug("Could not log channel expired event because " +
+                "the channel is null.");
+            return channelCount;
+        }
+
+        Content content = channel.getContent();
+        if (content == null)
+        {
+            logger.debug("Could not log channel expired event because the " +
+                "content is null.");
+            return channelCount;
+        }
+
+        Conference conference = content.getConference();
+        if (conference == null)
+        {
+            logger.debug("Could not log channel expired event because the " +
+                "conference is null.");
+            return channelCount;
+        }
+
+        Videobridge videobridge = conference.getVideobridge();
+        if (videobridge == null)
+        {
+            logger.debug("Could not log channel expired event because the " +
+                "videobridge is null.");
+            return channelCount;
+        }
+
+        // XXX(gp) This method is called after the conference expired field has
+        // been set to true but *before* the conference has been removed from
+        // the conference list of the videobridge object.
+        //
+        // In the following loop we accurately calculate the active conference
+        // count by checking whether or not the conference expired flag has been
+        // set.
+
+        for (Conference c : videobridge.getConferences())
+        {
+            if (c == null || c.isExpired())
+            {
+                continue;
+            }
+
+            for (Content cc : conference.getContents())
+            {
+                if (cc == null || cc.isExpired())
+                {
+                    continue;
+                }
+
+                for (Channel ccc : cc.getChannels())
+                {
+                    if (ccc == null || ccc.isExpired())
+                    {
+                        continue;
+                    }
+
+                    channelCount++;
+                }
+            }
+        }
+        return channelCount;
+    }
+
+    @Override
+    public void channelStartedStreaming(RtpChannel rtpChannel)
+    {
+        if (rtpChannel == null)
+        {
+            logger.debug("Could not log channelStartedStreaming event because " +
+                "the rtpChannel is null.");
+            return;
+        }
+
+        publishStringMetric(
+            getClass().getName()
+                + MetricService.METRIC_CHANNELSTART_POSTFIX,
+            rtpChannel.getStreamTarget().getDataAddress().getHostAddress());
+    }
 }

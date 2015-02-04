@@ -774,4 +774,10 @@ public class InfluxDBLoggingService
                 conference.getID()
             }));
     }
+
+    @Override
+    public void channelStartedStreaming(RtpChannel rtpChannel)
+    {
+        // Ignored.
+    }
 }

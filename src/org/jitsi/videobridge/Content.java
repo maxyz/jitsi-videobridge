@@ -275,11 +275,11 @@ public class Content
         // Initialize channel
         channel.initialize();
 
-        Videobridge videobridge = getConference().getVideobridge();
-        int channelCount = videobridge.getChannelCount();
-
         if (logger.isInfoEnabled())
         {
+            Videobridge videobridge = getConference().getVideobridge();
+            int channelCount = videobridge.getChannelCount();
+
             /*
              * The method Videobridge.getChannelCount() should better be
              * executed outside synchronized blocks in order to reduce the risks
@@ -292,15 +292,6 @@ public class Content
                         + ". The total number of conferences is now "
                         + videobridge.getConferenceCount() + ", channels "
                         + channelCount + ".");
-        }
-
-        MetricService metricService = videobridge.getMetricService();
-
-        if (metricService != null)
-        {
-            metricService.publishNumericMetric(
-                    MetricService.METRIC_CHANNELS,
-                    channelCount);
         }
 
         return channel;
@@ -346,6 +337,21 @@ public class Content
         sctpConnection.initialize();
 
         return sctpConnection;
+    }
+
+    /**
+     * Gets the indicator which determines whether this <tt>Content</tt> has
+     * expired.
+     *
+     * @return <tt>true</tt> if this <tt>Content</tt> has expired; otherwise,
+     * <tt>false</tt>
+     */
+    public boolean isExpired()
+    {
+        // Conference starts with expired equal to false and the only assignment
+        // to expired is to set it to true so there is no need to synchronize
+        // the reading of expired.
+        return expired;
     }
 
     /**
