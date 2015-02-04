@@ -9,6 +9,11 @@ package org.jitsi.videobridge.influxdb;
 import org.jitsi.service.configuration.*;
 import org.jitsi.videobridge.osgi.*;
 import org.osgi.framework.*;
+import org.osgi.service.event.*;
+
+import java.beans.*;
+import java.beans.EventHandler;
+import java.util.*;
 
 /**
  * Implements a <tt>BundleActivator</tt> for <tt>LoggingService</tt>.
@@ -21,9 +26,9 @@ public class LoggingBundleActivator
     /**
      * The <tt>LoggingService</tt> instance in use.
      */
-    private InfluxDBLoggingService loggingService;
+    private InfluxDBLoggingHandler loggingHandler;
 
-    private ServiceRegistration<LoggingService> serviceRegistration;
+    private ServiceRegistration<EventHandler> serviceRegistration;
 
     /**
      * Initializes a <tt>LoggingService</tt>.
@@ -39,13 +44,20 @@ public class LoggingBundleActivator
                     bundleContext,
                     ConfigurationService.class);
 
-        if (cfg.getBoolean(InfluxDBLoggingService.ENABLED_PNAME, false))
+        if (cfg.getBoolean(InfluxDBLoggingHandler.ENABLED_PNAME, false))
         {
-            loggingService = new InfluxDBLoggingService(cfg);
+            String[] topics = new String[] {
+                "org/jitsi/*"
+            };
+
+            Dictionary props = new Hashtable();
+            props.put(EventConstants.EVENT_TOPIC, topics);
+
+            loggingHandler = new InfluxDBLoggingHandler(cfg);
 
             serviceRegistration
                 = bundleContext.registerService(
-                    LoggingService.class, loggingService, null);
+                InfluxDBLoggingHandler.class, loggingHandler, props);
         }
     }
 

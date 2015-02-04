@@ -9,6 +9,7 @@ package org.jitsi.videobridge.influxdb;
 import org.jitsi.service.configuration.*;
 import org.jitsi.util.*;
 import org.json.simple.*;
+import org.osgi.service.event.*;
 
 import java.io.*;
 import java.net.*;
@@ -16,13 +17,13 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * Allows logging of {@link org.jitsi.videobridge.influxdb.Event}s using an
+ * Allows logging of {@link InfluxDBEvent}s using an
  * <tt>InfluxDB</tt> instance.
  *
  * @author Boris Grozev
  */
-public class InfluxDBLoggingService
-        implements LoggingService
+public class InfluxDBLoggingHandler
+        implements EventHandler
 {
     /**
      * The name of the property which specifies whether logging to an
@@ -64,7 +65,7 @@ public class InfluxDBLoggingService
      * and its instances to print debug information.
      */
     private static final Logger logger
-        = Logger.getLogger(InfluxDBLoggingService.class);
+        = Logger.getLogger(InfluxDBLoggingHandler.class);
 
     /**
      * The <tt>Executor</tt> which is to perform the task of sending data to
@@ -72,7 +73,7 @@ public class InfluxDBLoggingService
      */
     private final Executor executor
         = ExecutorUtils
-            .newCachedThreadPool(true, InfluxDBLoggingService.class.getName());
+            .newCachedThreadPool(true, InfluxDBLoggingHandler.class.getName());
 
     /**
      * The <tt>URL</tt> to be used to POST to <tt>InfluxDB</tt>. Besides the
@@ -88,7 +89,7 @@ public class InfluxDBLoggingService
      *
      * @throws Exception if initialization fails
      */
-    InfluxDBLoggingService(ConfigurationService cfg)
+    InfluxDBLoggingHandler(ConfigurationService cfg)
         throws Exception
     {
         if (cfg == null)
@@ -125,12 +126,13 @@ public class InfluxDBLoggingService
      * returns without blocking, the blocking operations are performed by a
      * thread from {@link #executor}.
      *
-     * @param e the <tt>Event</tt> to log.
+     * @param event the <tt>Event</tt> to log.
      */
     @SuppressWarnings("unchecked")
     @Override
-    public void logEvent(Event e)
+    public void handleEvent(Event event)
     {
+        InfluxDBEvent e = convert(event);
         // The following is a sample JSON message in the format used by InfluxDB
         //  [
         //    {
@@ -202,6 +204,11 @@ public class InfluxDBLoggingService
                 sendPost(jsonString);
             }
         });
+    }
+
+    private InfluxDBEvent convert(Event event)
+    {
+        return null;
     }
 
     /**

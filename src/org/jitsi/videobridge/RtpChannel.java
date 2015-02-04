@@ -963,18 +963,6 @@ public class RtpChannel
                 stream.setSSRCFactory(new SSRCFactoryImpl(initialLocalSSRC));
 
             stream.start();
-
-            Videobridge videobridge
-                = getContent().getConference().getVideobridge();
-            MetricService metricService = videobridge.getMetricService();
-            if (metricService != null && streamTarget != null)
-            {
-                metricService
-                    .publishStringMetric(
-                            getClass().getName()
-                                + MetricService.METRIC_CHANNELSTART_POSTFIX,
-                            this.streamTarget.getDataAddress().getHostAddress());
-            }
         }
 
         if (logger.isTraceEnabled())

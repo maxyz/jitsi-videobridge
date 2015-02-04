@@ -31,6 +31,7 @@ import org.jivesoftware.smack.provider.*;
 import org.jivesoftware.smackx.pubsub.*;
 import org.jivesoftware.smackx.pubsub.provider.*;
 import org.osgi.framework.*;
+import org.osgi.service.event.*;
 
 /**
  * Represents the Jitsi Videobridge which creates, lists and destroys
@@ -245,17 +246,6 @@ public class Videobridge
                         + ". The total number of conferences is now "
                         + getConferenceCount() + ", channels "
                         + getChannelCount() + ".");
-        }
-
-        MetricService metricService = getMetricService();
-        if (metricService != null)
-        {
-            metricService
-                .publishNumericMetric(MetricService.METRIC_CONFERENCES,
-                                      getConferenceCount());
-            metricService
-                .startMeasuredTransaction(MetricService.METRIC_CONFERENCELENGTH,
-                    conference.getID());
         }
 
         return conference;
@@ -506,14 +496,14 @@ public class Videobridge
      * @return the <tt>LoggingService</tt> used by this
      * <tt>Videobridge</tt>.
      */
-    public LoggingService getLoggingService()
+    public EventAdmin getEventAdmin()
     {
         BundleContext bundleContext = getBundleContext();
 
         if (bundleContext != null)
         {
             return ServiceUtils2.getService(bundleContext,
-                                            LoggingService.class);
+                                            EventAdmin.class);
         }
 
         return null;
@@ -892,13 +882,13 @@ public class Videobridge
                             channel.describe(responseChannelIQ);
                             responseContentIQ.addChannel(responseChannelIQ);
 
-                            LoggingService loggingService;
+                            EventAdmin eventAdmin;
                             if (channelCreated
-                                    && (loggingService = getLoggingService())
+                                    && (eventAdmin = getEventAdmin())
                                         != null)
 
                             {
-                                loggingService.logEvent(
+                                eventAdmin.sendEvent(
                                     EventFactory.channelCreated(
                                         channel.getID(),
                                         content.getName(),

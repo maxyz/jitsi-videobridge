@@ -9,6 +9,7 @@ package org.jitsi.videobridge.metrics;
 import java.util.*;
 import org.jitsi.service.configuration.*;
 import org.jitsi.util.*;
+import org.osgi.service.event.*;
 
 /**
  * A generic service interface to push metrics to cloud based collector servers.
@@ -31,6 +32,7 @@ import org.jitsi.util.*;
  * @author zbettenbuk
  */
 public class MetricService
+    implements EventHandler
 {
 
     private static final Logger logger = Logger.getLogger(MetricService.class);
@@ -78,7 +80,7 @@ public class MetricService
      * @param metricName Name of the metric
      * @param metricValue Value of the metric
      */
-    public void publishNumericMetric(String metricName, int metricValue)
+    private void publishNumericMetric(String metricName, int metricValue)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -107,7 +109,7 @@ public class MetricService
      * @param metricName Name of the metric
      * @param metricValue Value of the metric
      */
-    public void publishStringMetric(String metricName, String metricValue)
+    private void publishStringMetric(String metricName, String metricValue)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -135,7 +137,7 @@ public class MetricService
      *
      * @param metricName Name of the metric
      */
-    public void publishIncrementalMetric(String metricName)
+    private void publishIncrementalMetric(String metricName)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -166,7 +168,7 @@ public class MetricService
      * @param metricName Name of the metric
      * @param increment Value to increase the metric with
      */
-    public void publishIncrementalMetric(String metricName, int increment)
+    private void publishIncrementalMetric(String metricName, int increment)
     {
         for (MetricServicePublisher publisher : this.publishers)
         {
@@ -194,7 +196,7 @@ public class MetricService
      * @param transactionType Type of the transaction (e.g. create conference)
      * @param transactionId Unique id of the transaction (e.g. conference ID)
      */
-    public void startMeasuredTransaction(String transactionType,
+    private void startMeasuredTransaction(String transactionType,
                                          String transactionId)
     {
         for (MetricServicePublisher publisher : this.publishers)
@@ -224,7 +226,7 @@ public class MetricService
      * @param transactionType Type of the transaction (e.g. create conference)
      * @param transactionId Unique id of the transaction (e.g. conference ID)
      */
-    public void endMeasuredTransaction(String transactionType,
+    private void endMeasuredTransaction(String transactionType,
                                        String transactionId)
     {
         for (MetricServicePublisher publisher : this.publishers)
@@ -247,4 +249,9 @@ public class MetricService
         }
     }
 
+    @Override
+    public void handleEvent(Event event)
+    {
+
+    }
 }

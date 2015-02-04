@@ -4,7 +4,11 @@
  * Distributable under LGPL license.
  * See terms of license at gnu.org.
  */
-package org.jitsi.videobridge.influxdb;
+package org.jitsi.videobridge;
+
+import org.osgi.service.event.*;
+
+import java.util.*;
 
 /**
  * A utility class with static methods which initialize <tt>Event</tt> instances
@@ -161,13 +165,12 @@ public class EventFactory
      */
     public static Event conferenceCreated(String id, String focus)
     {
-        return new Event("conference_created",
-                         CONFERENCE_CREATED_COLUMNS,
-                         new Object[]
-                             {
-                                 id,
-                                 focus != null ? focus : "null"
-                             });
+        Dictionary properties = new Hashtable();
+        properties.put("conference_id", id);
+        properties.put("focus" , focus != null ? focus : "null");
+
+        return
+            new Event("org/jitsi/videobridge/Conference/CREATED", properties);
     }
 
     /**
@@ -180,9 +183,12 @@ public class EventFactory
      */
     public static Event contentCreated(String name, String conferenceId)
     {
-        return new Event("content_created",
-                         CONTENT_CREATED_COLUMNS,
-                         new Object[] {name, conferenceId});
+        Dictionary properties = new Hashtable();
+        properties.put("name", name);
+        properties.put("conference_id", conferenceId);
+
+        return
+            new Event("org/jitsi/videobridge/Content/CREATED", properties);
     }
 
     /**
@@ -203,10 +209,15 @@ public class EventFactory
             String endpointId,
             int lastN)
     {
-        return new Event("channel_created",
-                         CHANNEL_CREATED_COLUMNS,
-                         new Object[] {id, contentName, conferenceId,
-                                 endpointId, lastN});
+        Dictionary properties = new Hashtable();
+        properties.put("channel_id", id);
+        properties.put("content_name", contentName);
+        properties.put("conference_id", conferenceId);
+        properties.put("endpoint_id", endpointId);
+        properties.put("lastn", lastN);
+
+        return
+            new Event("org/jitsi/videobridge/Channel/CREATED", properties);
     }
 
     /**
@@ -218,9 +229,11 @@ public class EventFactory
      */
     public static Event conferenceExpired(String id)
     {
-        return new Event("conference_expired",
-                         CONFERENCE_EXPIRED_COLUMNS,
-                         new Object[] {id});
+        Dictionary properties = new Hashtable();
+        properties.put("conference_id", id);
+
+        return
+            new Event("org/jitsi/videobridge/Conference/EXPIRED", properties);
     }
 
     /**
@@ -233,9 +246,11 @@ public class EventFactory
      */
     public static Event contentExpired(String name, String conferenceId)
     {
-        return new Event("content_expired",
-                         CONTENT_EXPIRED_COLUMNS,
-                         new Object[] {name, conferenceId});
+        Dictionary properties = new Hashtable();
+        properties.put("name", name);
+        properties.put("conference_id", conferenceId);
+
+        return new Event("org/jitsi/videobridge/Content/EXPIRED", properties);
     }
 
     /**
@@ -252,9 +267,12 @@ public class EventFactory
             String contentName,
             String conferenceId)
     {
-        return new Event("channel_expired",
-                         CHANNEL_EXPIRED_COLUMNS,
-                         new Object[] {id, contentName, conferenceId});
+        Dictionary properties = new Hashtable();
+        properties.put("channel_id", id);
+        properties.put("content_name", contentName);
+        properties.put("conference_id", conferenceId);
+
+        return new Event("org/jitsi/videobridge/Channel/EXPIRED", properties);
     }
 
     /**
@@ -276,14 +294,16 @@ public class EventFactory
             String ufrag,
             boolean isControlling)
     {
-        return new Event("transport_created",
-                         TRANSPORT_CREATED_COLUMNS,
-                         new Object[]{
-                                 String.valueOf(hashCode),
-                                 conferenceId,
-                                 numComponents,
-                                 ufrag,
-                                 Boolean.valueOf(isControlling).toString()});
+        Dictionary properties = new Hashtable();
+        properties.put("hash_code", String.valueOf(hashCode));
+        properties.put("conference_id", conferenceId);
+        properties.put("num_components", numComponents);
+        properties.put("ufrag", ufrag);
+        properties.put("is_controlling",
+            Boolean.valueOf(isControlling).toString());
+
+        return new Event(
+            "org/jitsi/videobridge/IceUdpTransportManager/CREATED", properties);
     }
 
     /**
@@ -300,12 +320,13 @@ public class EventFactory
             String conferenceId,
             String channelId)
     {
-        return new Event("transport_channel_added",
-                         TRANSPORT_CHANNEL_ADDED_COLUMNS,
-                         new Object[]{
-                                 String.valueOf(hashCode),
-                                 conferenceId,
-                                 channelId});
+        Dictionary properties = new Hashtable();
+        properties.put("hash_code", String.valueOf(hashCode));
+        properties.put("conference_id", conferenceId);
+        properties.put("channel_id", channelId);
+
+        return new Event(
+            "org/jitsi/videobridge/IceUdpTransportManager/TRANSPORT_CHANNEL_ADDED", properties);
     }
 
     /**
@@ -323,12 +344,13 @@ public class EventFactory
             String conferenceId,
             String channelId)
     {
-        return new Event("transport_channel_removed",
-                         TRANSPORT_CHANNEL_REMOVED_COLUMNS,
-                         new Object[]{
-                                 String.valueOf(hashCode),
-                                 conferenceId,
-                                 channelId});
+        Dictionary properties = new Hashtable();
+        properties.put("hash_code", String.valueOf(hashCode));
+        properties.put("conference_id", conferenceId);
+        properties.put("channel_id", channelId);
+
+        return new Event(
+            "org/jitsi/videobridge/IceUdpTransportManager/TRANSPORT_CHANNEL_REMOVED", properties);
     }
 
     /**
@@ -347,12 +369,13 @@ public class EventFactory
             String conferenceId,
             String selectedPairs)
     {
-        return new Event("transport_connected",
-                         TRANSPORT_CONNECTED_COLUMNS,
-                         new Object[]{
-                                 String.valueOf(hashCode),
-                                 conferenceId,
-                                 selectedPairs});
+        Dictionary properties = new Hashtable();
+        properties.put("hash_code", String.valueOf(hashCode));
+        properties.put("conference_id", conferenceId);
+        properties.put("selected_pairs", selectedPairs);
+
+        return new Event(
+            "org/jitsi/videobridge/IceUdpTransportManager/TRANSPORT_CHANNEL_CONNECTED", properties);
     }
 
     /**
@@ -372,13 +395,13 @@ public class EventFactory
             String oldState,
             String newState)
     {
-        return new Event("transport_state_changed",
-                         TRANSPORT_STATE_CHANGED_COLUMNS,
-                         new Object[]{
-                                 String.valueOf(hashCode),
-                                 conferenceId,
-                                 oldState,
-                                 newState});
+        Dictionary properties = new Hashtable();
+        properties.put("hash_code", String.valueOf(hashCode));
+        properties.put("old_state", oldState);
+        properties.put("new_state", newState);
+
+        return new Event(
+            "org/jitsi/videobridge/IceUdpTransportManager/TRANSPORT_CHANGED", properties);
     }
 
     /**
@@ -393,13 +416,12 @@ public class EventFactory
             String conferenceId,
             String endpointId)
     {
-        return new Event("endpoint_created",
-                         ENDPOINT_CREATED_COLUMNS,
-                         new Object[]
-                             {
-                                 conferenceId,
-                                 endpointId
-                             });
+        Dictionary properties = new Hashtable();
+        properties.put("conference_id", conferenceId);
+        properties.put("endpoint_id", endpointId);
+
+        return new Event(
+            "org/jitsi/videobridge/Endpoint/CREATED", properties);
     }
 
     /**
@@ -411,12 +433,11 @@ public class EventFactory
     public static Event focusCreated(
             String roomJid)
     {
-        return new Event("focus_created",
-                         FOCUS_CREATED_COLUMNS,
-                         new Object[]
-                                 {
-                                         roomJid,
-                                 });
+        Dictionary properties = new Hashtable();
+        properties.put("room_jid", roomJid);
+
+        return new Event(
+            "org/jitsi/jicofo/Focus/CREATED", properties);
     }
 
     /**
@@ -432,13 +453,13 @@ public class EventFactory
             String conferenceId,
             String roomJid)
     {
-        return new Event("conference_room",
-                         CONFERENCE_ROOM_COLUMNS,
-                         new Object[]
-                                 {
-                                         conferenceId,
-                                         roomJid
-                                 });
+        Dictionary properties = new Hashtable();
+        properties.put("room_jid", roomJid);
+        properties.put("conference_id", conferenceId);
+
+
+        return new Event(
+            "org/jitsi/jicofo/Conference/Room/CREATED", properties);
     }
 
     /**
@@ -456,13 +477,13 @@ public class EventFactory
             String endpointId,
             String displayName)
     {
-        return new Event("endpoint_display_name",
-                         ENDPOINT_DISPLAY_NAME_COLUMNS,
-                         new Object[]
-                                 {
-                                         conferenceId,
-                                         endpointId,
-                                         displayName
-                                 });
+        Dictionary properties = new Hashtable();
+        properties.put("endpoint_id", endpointId);
+        properties.put("conference_id", conferenceId);
+        properties.put("display_name", displayName);
+
+
+        return new Event(
+            "org/jitsi/videobridge/Endpoint/NAME_CHANGED", properties);
     }
 }

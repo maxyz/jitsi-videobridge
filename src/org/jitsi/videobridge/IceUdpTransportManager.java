@@ -29,8 +29,8 @@ import org.jitsi.impl.neomedia.transform.dtls.*;
 import org.jitsi.service.configuration.*;
 import org.jitsi.service.neomedia.*;
 import org.jitsi.util.Logger;
-import org.jitsi.videobridge.influxdb.*;
 import org.osgi.framework.*;
+import org.osgi.service.event.*;
 
 /**
  * Implements the Jingle ICE-UDP transport.
@@ -323,11 +323,11 @@ public class IceUdpTransportManager
         iceStream = iceAgent.getStream(iceStreamName);
         iceStream.addPairChangeListener(iceStreamPairChangeListener);
 
-        LoggingService loggingService
-                = conference.getVideobridge().getLoggingService();
-        if (loggingService != null)
+        EventAdmin eventAdmin
+                = conference.getVideobridge().getEventAdmin();
+        if (eventAdmin != null)
         {
-            loggingService.logEvent(
+            eventAdmin.sendEvent(
                 EventFactory.transportCreated(
                     hashCode(),
                     conference.getID(),
@@ -422,11 +422,11 @@ public class IceUdpTransportManager
         if (iceConnected)
             channel.transportConnected();
 
-        LoggingService loggingService
-                = conference.getVideobridge().getLoggingService();
-        if (loggingService != null)
+        EventAdmin eventAdmin
+                = conference.getVideobridge().getEventAdmin();
+        if (eventAdmin != null)
         {
-            loggingService.logEvent(
+            eventAdmin.sendEvent(
                 EventFactory.transportChannelAdded(
                     hashCode(),
                     conference.getID(),
@@ -710,11 +710,11 @@ public class IceUdpTransportManager
 
             updatePayloadTypeFilters();
 
-            LoggingService loggingService
-                = conference.getVideobridge().getLoggingService();
-            if (loggingService != null)
+            EventAdmin eventAdmin
+                = conference.getVideobridge().getEventAdmin();
+            if (eventAdmin != null)
             {
-                loggingService.logEvent(
+                eventAdmin.sendEvent(
                     EventFactory.transportChannelRemoved(
                         hashCode(),
                         conference.getID(),
@@ -1588,11 +1588,11 @@ public class IceUdpTransportManager
 
             logd(s.toString());
 
-            LoggingService loggingService
-                    = conference.getVideobridge().getLoggingService();
-            if (loggingService != null)
+            EventAdmin eventAdmin
+                    = conference.getVideobridge().getEventAdmin();
+            if (eventAdmin != null)
             {
-                loggingService.logEvent(
+                eventAdmin.sendEvent(
                     EventFactory.transportStateChanged(
                             hashCode(),
                             conference.getID(),
@@ -1756,9 +1756,9 @@ public class IceUdpTransportManager
     {
         iceConnected = true;
 
-        LoggingService loggingService
-                = conference.getVideobridge().getLoggingService();
-        if (loggingService != null)
+        EventAdmin eventAdmin
+                = conference.getVideobridge().getEventAdmin();
+        if (eventAdmin != null)
         {
             StringBuilder s = new StringBuilder();
             for (Component component : iceStream.getComponents())
@@ -1769,7 +1769,7 @@ public class IceUdpTransportManager
                     .append(pair.getRemoteCandidate().getTransportAddress())
                     .append("; ");
             }
-            loggingService.logEvent(
+            eventAdmin.sendEvent(
                 EventFactory.transportConnected(
                     hashCode(),
                     conference.getID(),

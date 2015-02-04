@@ -19,10 +19,9 @@ import org.jitsi.service.neomedia.*;
 import org.jitsi.service.neomedia.device.*;
 import org.jitsi.service.neomedia.recording.*;
 import org.jitsi.util.*;
-import org.jitsi.videobridge.influxdb.*;
-import org.jitsi.videobridge.metrics.*;
 import org.jitsi.videobridge.rtcp.*;
 import org.osgi.framework.*;
+import org.osgi.service.event.*;
 
 /**
  * Represents a content in the terms of Jitsi Videobridge.
@@ -162,13 +161,13 @@ public class Content
 
         mediaType = MediaType.parseString(this.name);
 
-        LoggingService loggingService
-            = this.conference.getVideobridge().getLoggingService();
+        EventAdmin eventAdmin
+            = this.conference.getVideobridge().getEventAdmin();
 
-        if (loggingService != null)
+        if (eventAdmin != null)
         {
-            loggingService.logEvent(
-                    EventFactory.contentCreated(name, conference.getID()));
+            eventAdmin.sendEvent(
+                EventFactory.contentCreated(name, conference.getID()));
         }
 
         touch();
@@ -295,15 +294,6 @@ public class Content
                         + channelCount + ".");
         }
 
-        MetricService metricService = videobridge.getMetricService();
-
-        if (metricService != null)
-        {
-            metricService.publishNumericMetric(
-                    MetricService.METRIC_CHANNELS,
-                    channelCount);
-        }
-
         return channel;
     }
 
@@ -367,10 +357,10 @@ public class Content
         setRecording(false, null);
         Conference conference = getConference();
 
-        LoggingService loggingService
-                = conference.getVideobridge().getLoggingService();
-        if (loggingService != null)
-            loggingService.logEvent(
+        EventAdmin eventAdmin
+                = conference.getVideobridge().getEventAdmin();
+        if (eventAdmin != null)
+            eventAdmin.sendEvent(
                 EventFactory.contentExpired(name, conference.getID()));
         try
         {

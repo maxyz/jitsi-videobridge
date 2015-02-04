@@ -15,9 +15,9 @@ import net.java.sip.communicator.impl.protocol.jabber.extensions.jingle.*;
 import org.jitsi.service.neomedia.*;
 import org.jitsi.util.*;
 import org.jitsi.util.event.*;
-import org.jitsi.videobridge.influxdb.*;
 import org.jitsi.videobridge.metrics.*;
 import org.osgi.framework.*;
+import org.osgi.service.event.*;
 
 /**
  * Represents channel in the terms of Jitsi Videobridge.
@@ -328,13 +328,13 @@ public abstract class Channel
         Content content = getContent();
         Conference conference = content.getConference();
 
-        LoggingService loggingService
-                = conference.getVideobridge().getLoggingService();
-        if (loggingService != null)
-            loggingService.logEvent(
-                    EventFactory.channelExpired(id,
-                                                content.getName(),
-                                                conference.getID()));
+        EventAdmin eventAdmin
+                = conference.getVideobridge().getEventAdmin();
+        if (eventAdmin != null)
+            eventAdmin.sendEvent(
+                EventFactory.channelExpired(id,
+                    content.getName(),
+                    conference.getID()));
         try
         {
             content.expireChannel(this);
@@ -404,14 +404,6 @@ public abstract class Channel
                             + ". The total number of conferences is now "
                             + videobridge.getConferenceCount() + ", channels "
                             + videobridge.getChannelCount() + ".");
-            }
-
-            MetricService metricService = videobridge.getMetricService();
-            if (metricService != null)
-            {
-                metricService
-                        .publishNumericMetric(MetricService.METRIC_CHANNELS,
-                                              videobridge.getChannelCount());
             }
         }
     }
